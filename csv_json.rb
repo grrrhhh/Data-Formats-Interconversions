@@ -1,4 +1,5 @@
 require 'csv'
+require 'json'
 
 # def temp()
 	
@@ -60,18 +61,41 @@ def  csv_json(from,to,header=true)
 	if to.nil?||to.empty?
 		to="/tmp/#{from.split(".")[0]}.json"
 	end
-	puts to
+	#puts to
+	
+	out_file = File.open(to,"w")
+	out_file.write("{\n")
 
-	flag=true
+	head_arr=[]
+	head_fill = true
+	#data_fill = false
+
 	CSV.foreach(from ,headers:false) do |row|
-		if flag
-			puts row
-			flag=false
+		if head_fill
+			if header 
+				head_arr=row.to_a
+				head_fill = false
+			else
+				head_arr=(1..row.to_a.size).map{|i| "COLM_"+i.to_s }
+				head_fill=false
+			end
+		#end
+		else
+		#if data_fill
+			data_arr=row.to_a
+			
+			h=Hash[head_arr.zip(data_arr)].to_json
+			out_file.write(h)
+			out_file.write(",\n")
 		end
-	end
 
+
+		#data_fill=true if !head_fill && !data_fill
+	end
+	out_file.seek(-2, IO::SEEK_END)
+	out_file.write("\n}\n")	
 end
-csv_json("File2.csv","")
+csv_json("File2.csv","out2.json")
 
 
 
